@@ -1,5 +1,34 @@
 # Changelog
 
+## HellzGate C5 Fork Changes
+
+Changes below are specific to the HellzGate C5 fork and are not part of
+upstream Piglet. See https://github.com/Hamspiced/piglet for the original
+project and full upstream history below this section.
+
+### v0.1 (2026-06-30)
+
+#### Bug Fixes
+- **Mesh Core channel split balancing** (`MeshNode.cpp`, `coreReassignChannels()`):
+  previously the last registered node absorbed the entire remainder when
+  dividing the 40-channel scan table across active nodes — e.g. at 9 nodes,
+  8 nodes got 4 channels each while the 9th got 8, roughly doubling its
+  scan-cycle time. Remainder channels are now spread one-per-node across
+  the first N nodes instead, keeping every node's channel count within 1
+  of every other (9 nodes → four nodes at 5 channels, five nodes at 4).
+
+---
+
+# Upstream Piglet Changelog
+
+## v2.57 (2026-06-24)
+...
+
+ #*************************
+
+
+# Changelog
+
 ## v2.57 (2026-06-24)
 
 ### New Features
