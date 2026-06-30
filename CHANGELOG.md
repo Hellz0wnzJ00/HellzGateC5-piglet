@@ -22,10 +22,6 @@ project and full upstream history below this section.
 # Upstream Piglet Changelog
 
 ## v2.57 (2026-06-24)
-...
-
- #*************************
-
 
 # Changelog
 
