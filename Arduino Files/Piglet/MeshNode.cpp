@@ -379,15 +379,20 @@ static void coreReassignChannels() {
     if (coreNodes[i].active) slots[count++] = i;
   if (count == 0) return;
 
-  // Split JCMK_CHANNELS[] evenly; last node gets the remainder
-  uint8_t perNode  = JCMK_NUM_CHANNELS / count;
-  uint8_t startIdx = 0;
+  // === HELLZGATE FORK CHANGE — see CHANGELOG.md "HellzGate C5 Fork Changes" v0.1 ===
+  // Was: perNode = JCMK_NUM_CHANNELS / count; last node absorbed the entire
+  //      remainder (e.g. 9 nodes -> 8 nodes @ 4ch, 1 node @ 8ch).
+  // Now: remainder spread one-per-node across the first N nodes, so every
+  //      node's channel count (and scan-cycle time) is within 1 of the rest.
+  // ===================================================================
+  uint8_t base      = JCMK_NUM_CHANNELS / count;
+  uint8_t remainder = JCMK_NUM_CHANNELS % count;
+  uint8_t startIdx  = 0;
   for (uint8_t n = 0; n < count; n++) {
+    uint8_t chCount = base + (n < remainder ? 1 : 0);
     coreNodes[slots[n]].startIdx = startIdx;
-    coreNodes[slots[n]].endIdx   = (n < count - 1)
-                                   ? (startIdx + perNode - 1)
-                                   : (JCMK_NUM_CHANNELS - 1);
-    startIdx += perNode;
+    coreNodes[slots[n]].endIdx   = startIdx + chCount - 1;
+    startIdx += chCount;
   }
   coreAssignVer++;
 
