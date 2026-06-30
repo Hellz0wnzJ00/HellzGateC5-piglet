@@ -2,9 +2,17 @@
 
 ## HellzGate C5 Fork Changes
 
-Changes below are specific to the HellzGate C5 fork and are not part of
-upstream Piglet. See https://github.com/Hamspiced/piglet for the original
-project and full upstream history below this section.
+Everything in this section is specific to the HellzGate C5 fork and is not
+part of upstream Piglet. Each entry corresponds to one or more inline
+`HELLZGATE FORK CHANGE` comment blocks in the source — search the codebase
+for that tag to find the exact lines changed:
+
+```
+grep -rn "HELLZGATE FORK CHANGE" .
+```
+
+See https://github.com/Hamspiced/piglet for the original project and the
+full upstream changelog below this section.
 
 ### v0.1 (2026-06-30)
 
@@ -20,10 +28,6 @@ project and full upstream history below this section.
 ---
 
 # Upstream Piglet Changelog
-
-## v2.57 (2026-06-24)
-
-# Changelog
 
 ## v2.57 (2026-06-24)
 
