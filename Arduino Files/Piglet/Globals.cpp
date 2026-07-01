@@ -59,6 +59,7 @@ String   uploadLastResult  = "";
 String   uploadTargetName  = "";
 uint32_t uploadFailedFiles = 0;
 int      wigleTokenStatus  = 0;
+int      wdgwarsKeyStatus  = 0;  // HELLZGATE FORK CHANGE — see CHANGELOG.md
 int      wigleLastHttpCode = 0;
 
 // ---- WiGLE constants ----

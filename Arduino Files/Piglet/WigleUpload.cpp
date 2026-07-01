@@ -285,10 +285,12 @@ bool wdgwarsTestKey() {
 
   if (WiFi.status() != WL_CONNECTED) {
     uploadLastResult = "No STA WiFi";
+    wdgwarsKeyStatus = -1;  // HELLZGATE FORK CHANGE — see CHANGELOG.md
     return false;
   }
   if (cfg.wdgwarsApiKey.length() < 8) {
     uploadLastResult = "No API key set";
+    wdgwarsKeyStatus = -1;  // HELLZGATE FORK CHANGE — see CHANGELOG.md
     return false;
   }
 
@@ -298,6 +300,7 @@ bool wdgwarsTestKey() {
 
   if (!client.connect(WDGWARS_HOST, WDGWARS_PORT)) {
     uploadLastResult = "TLS connect fail";
+    wdgwarsKeyStatus = -1;  // HELLZGATE FORK CHANGE — see CHANGELOG.md
     return false;
   }
 
@@ -353,15 +356,19 @@ bool wdgwarsTestKey() {
       if (q1 >= 0 && q2 > q1) user = body.substring(q1 + 1, q2);
     }
     uploadLastResult = user.length() ? "Key valid — " + user : "Key valid (200)";
+    wdgwarsKeyStatus = 1;  // HELLZGATE FORK CHANGE — see CHANGELOG.md
     return true;
   }
 
   if (code == 401 || code == 403) {
     uploadLastResult = "Key invalid (" + String(code) + ")";
+    wdgwarsKeyStatus = -1;  // HELLZGATE FORK CHANGE — see CHANGELOG.md
   } else if (code == 0) {
     uploadLastResult = "No response from server";
+    wdgwarsKeyStatus = -1;  // HELLZGATE FORK CHANGE — see CHANGELOG.md
   } else {
     uploadLastResult = "Unexpected response (" + String(code) + ")";
+    wdgwarsKeyStatus = -1;  // HELLZGATE FORK CHANGE — see CHANGELOG.md
   }
   return false;
 }

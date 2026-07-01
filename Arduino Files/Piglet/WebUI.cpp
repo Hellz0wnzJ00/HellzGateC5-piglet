@@ -274,7 +274,8 @@ static const char INDEX_HTML[] PROGMEM = R"HTML(
       <div class="pill" id="pillSd"><span class="dot"></span>SD: —</div>
       <div class="pill" id="pillGps"><span class="dot"></span>GPS: —</div>
       <div class="pill" id="pillSta"><span class="dot"></span>STA: —</div>
-      <div class="pill" id="pillWigle"><span class="dot"></span>WiGLE: —</div>
+      <div class="pill" id="pillWdgw"><span class="dot"></span>WDGW: &mdash;</div>
+      <div class="pill" id="pillWigle"><span class="dot"></span>WiGLE: &mdash;</div>
     </div>
 
     <div class="kv">
@@ -303,6 +304,16 @@ static const char INDEX_HTML[] PROGMEM = R"HTML(
       <button onclick="doStop()">&#9724; Stop Scan</button>
     </div>
 
+    <!-- WDGoWars section — HELLZGATE FORK CHANGE: moved before WiGLE, primary platform -->
+    <div class="inner-card">
+      <h4>WDGoWars</h4>
+      <div id="wdgwarsMsg" class="muted" style="font-size:14px">—</div>
+      <div class="row mt-sm">
+        <button onclick="wdgwarsTest()">Test API Key</button>
+        <button class="btn-primary" onclick="wdgwarsUploadAll()">Upload All CSVs</button>
+      </div>
+    </div>
+
     <!-- WiGLE section -->
     <div class="inner-card">
       <h4>WiGLE Upload</h4>
@@ -315,16 +326,6 @@ static const char INDEX_HTML[] PROGMEM = R"HTML(
         <button class="btn-primary" onclick="wigleUploadAll()">Upload All CSVs</button>
       </div>
     </div>
-
-    <!-- WDGoWars section -->
-    <div class="inner-card">
-      <h4>WDGoWars</h4>
-      <div id="wdgwarsMsg" class="muted" style="font-size:14px">—</div>
-      <div class="row mt-sm">
-        <button onclick="wdgwarsTest()">Test API Key</button>
-        <button class="btn-primary" onclick="wdgwarsUploadAll()">Upload All CSVs</button>
-      </div>
-    </div>
   </div>
 
   <!-- ============ CONFIG ============ -->
@@ -332,18 +333,18 @@ static const char INDEX_HTML[] PROGMEM = R"HTML(
     <h3>Configuration</h3>
     <div class="cfg-grid">
       <div>
-        <label>WiGLE Basic Token</label>
-        <input id="wigleBasicToken" placeholder="Enter 'Encoded for use' token from wigle.net/account">
-        <a href="https://wigle.net/account" target="_blank" rel="noopener" style="font-size:12px;margin-top:5px;display:inline-block">&rarr; Get your API Key here</a>
-      </div>
-      <div>
         <label>WDGoWars API Key</label>
         <input id="wdgwarsApiKey" placeholder="API key from wdgwars.pl/profile (leave empty to disable)">
         <a href="https://wdgwars.pl/profile/" target="_blank" rel="noopener" style="font-size:12px;margin-top:5px;display:inline-block">&rarr; Get your API Key here</a>
       </div>
       <div>
+        <label>WiGLE Basic Token</label>
+        <input id="wigleBasicToken" placeholder="Enter 'Encoded for use' token from wigle.net/account">
+        <a href="https://wigle.net/account" target="_blank" rel="noopener" style="font-size:12px;margin-top:5px;display:inline-block">&rarr; Get your API Key here</a>
+      </div>
+      <div>
         <label>Device Name</label>
-        <input id="deviceName" placeholder="e.g. rover1 &mdash; identifies this device in WiGLE uploads (optional)">
+        <input id="deviceName" placeholder="e.g. rover1 &mdash; identifies this device in WDGW/WiGLE uploads (optional)">
       </div>
       <div><label>GPS Baud Rate</label><input id="gpsBaud" type="number" value="9600"></div>
       <div><label>Home SSID</label><input id="homeSsid" placeholder="Your home Wi-Fi"></div>
@@ -466,6 +467,13 @@ function wigleStatusText(s){
   return 'WiGLE: Unknown';
 }
 
+// === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+function wdgwarsStatusText(s){
+  if(s===1)return 'WDGW: Valid';
+  if(s===-1)return 'WDGW: Invalid';
+  return 'WDGW: Unknown';
+}
+
 function setWigleMsg(t,cls){
   const el=$('wigleMsg');
   el.textContent=t;
@@ -497,6 +505,10 @@ async function loadStatus(){
     setPill('pillGps','GPS: '+(j.gpsFix?'LOCK':'NO FIX'),j.gpsFix?'ok':'warn');
     setPill('pillSta','STA: '+(j.wifiConnected?'CONNECTED':'OFF'),j.wifiConnected?'ok':'warn');
 
+    // === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+    const dCls=(j.wdgwarsKeyStatus===1)?'ok':(j.wdgwarsKeyStatus===-1?'bad':'warn');
+    setPill('pillWdgw',wdgwarsStatusText(j.wdgwarsKeyStatus),dCls);
+
     const wCls=(j.wigleTokenStatus===1)?'ok':(j.wigleTokenStatus===-1?'bad':'warn');
     setPill('pillWigle',wigleStatusText(j.wigleTokenStatus),wCls);
 
@@ -517,7 +529,7 @@ async function loadStatus(){
     setText('vApSsid',j?.config?.wardriverSsid||'\u2014');
 
     // Fill config form — skip masked/secret values
-    for(const k of ['wigleBasicToken','wdgwarsApiKey','deviceName','board','gpsBaud','homeSsid','wardriverSsid','wardriverPsk','scanMode','speedUnits','battPin','batteryTest','maxBootUploads','meshModeOnBoot','espnowKey','rotateScreen180','autoStartAfterUpload']){
+    for(const k of ['wdgwarsApiKey','wigleBasicToken','deviceName','board','gpsBaud','homeSsid','wardriverSsid','wardriverPsk','scanMode','speedUnits','battPin','batteryTest','maxBootUploads','meshModeOnBoot','espnowKey','rotateScreen180','autoStartAfterUpload']){
       if(j.config&&(k in j.config)){
         const v=String(j.config[k]);
         if(maskedKeys.has(k)&&(v===''||v==='(set)'))continue;
@@ -598,7 +610,7 @@ async function deleteAllLogs(){
 
 /* ---- Shared save logic used by both Save and Save+Reboot ---- */
 async function doSave(){
-  const keys=['board','wigleBasicToken','wdgwarsApiKey','deviceName','gpsBaud','homeSsid','homePsk','wardriverSsid','wardriverPsk','scanMode','speedUnits','battPin','batteryTest','maxBootUploads','meshModeOnBoot','espnowKey','rotateScreen180','autoStartAfterUpload'];
+  const keys=['board','wdgwarsApiKey','wigleBasicToken','deviceName','gpsBaud','homeSsid','homePsk','wardriverSsid','wardriverPsk','scanMode','speedUnits','battPin','batteryTest','maxBootUploads','meshModeOnBoot','espnowKey','rotateScreen180','autoStartAfterUpload'];
   let body='# Saved from Web UI\n# key=value\n';
   for(const k of keys){
     const el=$(k);
@@ -840,6 +852,7 @@ static void handleStatus() {
   doc["uploadCurrentFile"] = uploadCurrentFile;
   doc["uploadLastResult"] = uploadLastResult;
   doc["wigleTokenStatus"] = wigleTokenStatus;
+  doc["wdgwarsKeyStatus"] = wdgwarsKeyStatus;  // HELLZGATE FORK CHANGE — see CHANGELOG.md
   doc["wigleLastHttpCode"] = wigleLastHttpCode;
 
   JsonObject c = doc.createNestedObject("config");
