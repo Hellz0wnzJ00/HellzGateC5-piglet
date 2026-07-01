@@ -74,7 +74,7 @@ Below the status indicators are live counts of networks found, and
 This section holds all the settings that control how the device behaves.
 Key fields explained:
 
-- **WiGLE Basic Token / WDGoWars API Key** — credentials that let the
+- **WDGoWars API Key / WiGLE Basic Token** — credentials that let the
   device automatically upload your collected data to those services.
   Leave blank to disable automatic uploads to either one.
 - **Device Name** — a label to identify this specific unit, useful if
@@ -124,6 +124,8 @@ These are planned but not yet available in the current firmware:
 
 - **Fan control** — manual/automatic cooling fan control from the
   dashboard
+- **WDGW status indicator** — a dedicated dashboard status pill for WDGW
+  upload readiness, matching the existing WiGLE one
 - **Live node list** — a real-time view of connected scan nodes and
   their status, directly in the dashboard
 - **Per-node scan type selection** — choosing whether individual scan
