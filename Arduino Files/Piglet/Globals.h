@@ -99,6 +99,7 @@ extern String   uploadTargetName;   // service label shown on OLED (e.g. "WDGW U
 extern uint32_t uploadFailedFiles;  // failed upload attempts in the current batch
 extern int      wigleTokenStatus;
 extern int      wdgwarsKeyStatus;  // HELLZGATE FORK CHANGE — see CHANGELOG.md
+extern bool     fanOn;             // HELLZGATE FORK CHANGE
 extern int      wigleLastHttpCode;
 
 // ---- WiGLE constants ----

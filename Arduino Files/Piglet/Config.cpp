@@ -20,7 +20,10 @@ const PinMap& detectPinsByChip() {
 
   m.toUpperCase();
 
-  if (m.indexOf("C5") >= 0) return PINS_C5;
+  // === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+  // Was: returned generic PINS_C5 (wrong GPS pins for this board, and no
+  // fan pin at all). Now: returns the corrected HELLZGATE_C5 map.
+  if (m.indexOf("C5") >= 0) return PINS_HELLZGATE_C5;
   if (m.indexOf("C6") >= 0) return PINS_C6;
   if (m.indexOf("S3") >= 0) return PINS_S3;
 
@@ -33,7 +36,7 @@ PinMap pickPinsFromConfig() {
   if (cfg.board == "s3") return PINS_S3;
   if (cfg.board == "exp") return PINS_S3_EXP_BASE;
   if (cfg.board == "c6") return PINS_C6;
-  if (cfg.board == "c5") return PINS_C5;
+  if (cfg.board == "c5") return PINS_HELLZGATE_C5;  // HELLZGATE FORK CHANGE
   return detectPinsByChip(); // "auto" or anything else
 }
 
@@ -124,6 +127,10 @@ void cfgAssignKV(const String& k, const String& v) {
     if (vv == "core" || vv == "node" || vv == "none") cfg.meshModeOnBoot = vv;
   }
   else if (k == "espnowKey") cfg.espnowKey = v;  // HELLZGATE FORK CHANGE
+  else if (k == "fanMode") {  // HELLZGATE FORK CHANGE — see CHANGELOG.md
+    String vv = v; vv.toLowerCase();
+    if (vv == "auto" || vv == "on" || vv == "off") cfg.fanMode = vv;
+  }
   else if (k == "rotateScreen180") {
     String vv = v; vv.toLowerCase();
     cfg.rotateScreen180 = (vv == "true" || vv == "1");
@@ -293,6 +300,11 @@ bool saveConfigToSD() {
   f.println("# ESP-NOW mesh encryption key — must match on every node AND the master.");
   f.println("# HELLZGATE FORK CHANGE — see CHANGELOG.md");
   f.print("espnowKey="); f.println(cfg.espnowKey);
+
+  f.println("");
+  f.println("# Fan mode: auto (on while scanning), on, or off. On/off only — no PWM.");
+  f.println("# HELLZGATE FORK CHANGE — see CHANGELOG.md");
+  f.print("fanMode="); f.println(cfg.fanMode);
 
   f.println("");
   f.println("# Rotate screen 180 degrees (true = upside-down mount). Requires reboot.");

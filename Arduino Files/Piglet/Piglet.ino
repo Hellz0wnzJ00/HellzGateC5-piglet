@@ -535,7 +535,36 @@ void setup() {
 
   updateOLED(0);
 
+  // === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+  // Fan GPIO init. On/off only — no PWM, no tach feedback on this board.
+  if (pins.fan_en >= 0) {
+    pinMode(pins.fan_en, OUTPUT);
+    digitalWrite(pins.fan_en, LOW);
+    fanOn = false;
+  }
+
   Serial.println("=== Boot complete ===");
+}
+
+// ================================================================
+//  HELLZGATE FORK CHANGE — see CHANGELOG.md
+//  Fan control: auto (on while scanning, off when paused), on, off.
+//  On/off only — this board's fan circuit has no PWM or tach feedback.
+// ================================================================
+static void updateFan() {
+  if (pins.fan_en < 0) return;  // no fan on this pin map
+
+  bool shouldBeOn;
+  if (cfg.fanMode == "on") shouldBeOn = true;
+  else if (cfg.fanMode == "off") shouldBeOn = false;
+  else shouldBeOn = scanningEnabled;  // "auto" (default)
+
+  if (shouldBeOn != fanOn) {
+    digitalWrite(pins.fan_en, shouldBeOn ? HIGH : LOW);
+    fanOn = shouldBeOn;
+    Serial.print("[FAN] ");
+    Serial.println(fanOn ? "ON" : "OFF");
+  }
 }
 
 // ================================================================
@@ -544,6 +573,13 @@ void setup() {
 void loop() {
   // Web server
   server.handleClient();
+
+  // === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+  static uint32_t lastFanCheck = 0;
+  if (millis() - lastFanCheck >= 1000) {
+    lastFanCheck = millis();
+    updateFan();
+  }
 
   // Track AP client presence and enforce AP window. The window does NOT
   // auto-extend on connect; the user must click "Stay" in the WebUI prompt

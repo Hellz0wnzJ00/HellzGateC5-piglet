@@ -72,5 +72,10 @@ extern uint8_t       coreNodeCount;
 extern CoreNodeInfo  coreNodes[CORE_MAX_NODES];
 
 void enterCoreMode();
+
+// === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+// Public wrapper so WebUI.cpp can trigger a resend after externally
+// changing a node's scanMode — coreResendAdminToAll() itself is static.
+void coreApplyNodeSettings();
 void exitCoreMode();
 void coreModeTick();

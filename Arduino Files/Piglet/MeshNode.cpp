@@ -490,6 +490,11 @@ static void coreResendAdminToAll() {
   }
 }
 
+// === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+void coreApplyNodeSettings() {
+  coreResendAdminToAll();
+}
+
 static void coreSendHeartbeatToAll() {
   // Broadcast a single heartbeat instead of per-node unicast.
   // At 12 nodes, unicast was 12 × 212-byte sends with 10 ms gaps = 120+ ms of

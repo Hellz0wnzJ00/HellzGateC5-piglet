@@ -42,7 +42,11 @@ struct Config {
   // core — become the mesh coordinator (receives wardriving records from nodes).
   // node — become a scanning node that forwards records to the Core.
   // none — normal solo wardriving mode.
-  String meshModeOnBoot = "none";
+  // === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+  // Was: "none" (stock Piglet default — solo wardriving).
+  // Now: "core" — a HellzGate master's entire job is coordinating its node
+  // array, so it should boot ready to do that with zero config required.
+  String meshModeOnBoot = "core";
 
   // === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
   // ESP-NOW mesh encryption key (PMK). Must be identical on the master AND
@@ -51,6 +55,12 @@ struct Config {
   // MeshNode.cpp buildEspNowPmk(). Change this default before real
   // deployment; it's a fallback, not a secret.
   String espnowKey = "HellzGateMeshKey";
+
+  // === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+  // Fan control mode: auto (on while scanning, off when paused), on
+  // (always on), off (always off). GPIO is on/off only — no PWM or
+  // tachometer feedback on this board's fan circuit.
+  String fanMode = "auto";
 
   // Rotate the OLED display 180° (true = upside-down mount, false = normal).
   // Requires reboot to take effect.
