@@ -4,7 +4,7 @@
 
 **A 10-node ESP32-C5 passive wireless survey array — forked from Piglet**
 
-[Changelog](CHANGELOG.md#hellzgate-c5-fork-changes) · [Setup Guide](SETUP_GUIDE.md) · [Fork Style Guide](FORK_STYLE_GUIDE.md)
+[Changelog](CHANGELOG.md#hellzgate-c5-fork-changes) · [User Guide](USER_GUIDE.md) · [Fork Style Guide](FORK_STYLE_GUIDE.md)
 
 </div>
 
