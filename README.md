@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="Images/sticker.jpeg" alt="HellzGate C5 — 10-Node Passive Wireless Survey Array" width="700">
+<img src="Images/sticker.png" alt="HellzGate C5 — 10-Node Passive Wireless Survey Array" width="700">
 
 **A 10-node ESP32-C5 passive wireless survey array — forked from Piglet**
 
