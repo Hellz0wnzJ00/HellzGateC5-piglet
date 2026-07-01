@@ -1,0 +1,244 @@
+<!--
+  HellzGate C5 — Web UI Theme Showcase (static preview, not live firmware)
+  Forked from Piglet by Hamspiced / Midwest Gadgets LLC
+  https://github.com/Hamspiced/piglet — used with permission
+
+  This is a STANDALONE DEMO with hardcoded sample data for showcasing the
+  theme — it is not served by the device. The real, live version of this
+  markup/CSS lives embedded in Arduino Files/Piglet/WebUI.cpp and is served
+  by the firmware itself at the device's AP address.
+-->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HellzGate C5 — Theme Preview</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 24'><text x='2' y='18' font-family='monospace' font-weight='bold' font-size='16' fill='%23ff2020'>HG</text></svg>">
+<style>
+  *,*::before,*::after{box-sizing:border-box}
+
+  :root{
+    --bg:#0a0505;
+    --card:#120909;
+    --cardHover:#1a0d0d;
+    --text:#e8e8e8;
+    --muted:#9a8888;
+    --border:#3a1414;
+    --input:#0a0505;
+    --inputBorder:#4a1818;
+    --inputFocus:#8a2222;
+    --accent:#ff2020;
+    --accentDim:rgba(255,32,32,.15);
+    --btn:#1a0808;
+    --btnHover:#2a0d0d;
+    --btnText:#e8e8e8;
+    --primary:#ff3b3b;
+    --primaryText:#150505;
+    --danger:#ff6b6b;
+    --dangerDim:rgba(255,107,107,.14);
+    --warn:#ffb84d;
+    --warnDim:rgba(255,184,77,.14);
+    --ok:#39ff6a;
+    --okDim:rgba(57,255,106,.14);
+    --bad:#ff3b3b;
+    --barBg:#1a0808;
+    --radius:10px;
+    --shadow:0 4px 24px rgba(0,0,0,.5);
+  }
+
+  html{color-scheme:dark}
+
+  /* ---- subtle hex-grid + circuit backdrop, CSS-only, no images ---- */
+  body{
+    font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    margin:0;padding:20px;
+    max-width:920px;
+    margin-left:auto;margin-right:auto;
+    background-color:var(--bg);
+    background-image:
+      linear-gradient(rgba(255,32,32,.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,32,32,.035) 1px, transparent 1px);
+    background-size:28px 28px;
+    color:var(--text);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    position:relative;
+  }
+
+  /* faint scanline overlay */
+  body::after{
+    content:"";
+    position:fixed;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(
+      to bottom, rgba(255,32,32,.02) 0px, rgba(255,32,32,.02) 1px,
+      transparent 1px, transparent 3px
+    );
+    z-index:999;
+  }
+
+  /* ---- Header ---- */
+  .header{
+    display:flex;align-items:center;gap:14px;
+    margin-bottom:22px;padding-bottom:18px;
+    border-bottom:1px solid var(--border);
+    position:relative;
+  }
+  .header .logo{
+    font-family:'Courier New',monospace;
+    font-weight:bold;font-size:26px;line-height:1;
+    color:var(--accent);
+    border:2px solid var(--accent);
+    padding:6px 10px;border-radius:4px;
+    text-shadow:0 0 8px rgba(255,32,32,.6);
+    box-shadow:0 0 14px rgba(255,32,32,.25) inset;
+  }
+  .header h1{
+    font-size:23px;font-weight:700;margin:0;letter-spacing:.5px;
+    text-transform:uppercase;
+    text-shadow:0 0 10px rgba(255,32,32,.45);
+    animation:flicker 9s infinite;
+  }
+  .header .sub{
+    margin:2px 0 0;color:var(--muted);font-size:13px;
+    font-family:'Courier New',monospace;
+  }
+  @keyframes flicker{
+    0%,96%,100%{opacity:1}
+    97%{opacity:.7}
+    98%{opacity:1}
+    98.5%{opacity:.5}
+    99%{opacity:1}
+  }
+
+  /* ---- Cards ---- */
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:20px;margin-bottom:16px;
+    box-shadow:var(--shadow);
+    position:relative;
+  }
+  /* corner brackets, matches the [ HZ ] accent style from the reference art */
+  .card::before, .card::after{
+    content:"";position:absolute;width:14px;height:14px;
+    border:2px solid var(--accent);opacity:.55;
+  }
+  .card::before{top:-1px;left:-1px;border-right:none;border-bottom:none}
+  .card::after{bottom:-1px;right:-1px;border-left:none;border-top:none}
+
+  .card h3{
+    margin:0 0 16px;font-size:12px;font-weight:700;
+    letter-spacing:2px;text-transform:uppercase;
+    color:var(--accent);
+    font-family:'Courier New',monospace;
+  }
+  .card h3::before{content:"// ";color:var(--btnHover);opacity:.8}
+  .card h3::after{content:" //";color:var(--btnHover);opacity:.8}
+
+  /* ---- Status pills (bugfix: now use theme vars, not old hardcoded rgba) ---- */
+  .statusGrid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+  .pill{
+    display:inline-flex;align-items:center;gap:6px;
+    border:1px solid var(--border);
+    border-radius:999px;padding:5px 12px;
+    font-size:13px;font-weight:500;
+    background:var(--input);color:var(--text);
+    font-family:'Courier New',monospace;
+    transition:border-color .2s,background .2s;
+  }
+  .pill .dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--muted);
+    flex-shrink:0;
+  }
+  .pill.ok .dot{background:var(--ok);box-shadow:0 0 6px var(--ok)}
+  .pill.bad .dot{background:var(--bad);box-shadow:0 0 6px var(--bad)}
+  .pill.warn .dot{background:var(--warn);box-shadow:0 0 6px var(--warn)}
+  .pill.ok{border-color:var(--ok);background:var(--okDim)}
+  .pill.bad{border-color:var(--bad);background:var(--dangerDim)}
+  .pill.warn{border-color:var(--warn);background:var(--warnDim)}
+
+  /* ---- Key-value rows ---- */
+  .kv{display:grid;grid-template-columns:1fr;gap:8px}
+  .kv > div{
+    display:flex;justify-content:space-between;
+    padding:8px 0;border-bottom:1px solid var(--border);
+    font-size:14px;
+  }
+  .kv .k{color:var(--muted)}
+  .kv .v{color:var(--text);font-family:'Courier New',monospace}
+
+  /* ---- Buttons ---- */
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  button{
+    background:var(--btn);color:var(--btnText);
+    border:1px solid var(--accentDim);
+    padding:9px 16px;border-radius:6px;
+    font-family:'Courier New',monospace;
+    font-size:13px;font-weight:700;letter-spacing:.5px;
+    text-transform:uppercase;cursor:pointer;
+    transition:all .15s ease;
+  }
+  button:hover{
+    background:var(--btnHover);border-color:var(--accent);
+    box-shadow:0 0 12px rgba(255,32,32,.35);
+  }
+  button.btn-primary{
+    background:var(--primary);color:var(--primaryText);
+    border-color:var(--primary);
+  }
+  button.btn-primary:hover{
+    box-shadow:0 0 16px rgba(255,59,59,.6);
+    filter:brightness(1.1);
+  }
+
+  .muted{color:var(--muted)}
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="logo">HG</div>
+    <div>
+      <h1>HellzGate C5</h1>
+      <p class="sub">// ESP32-C5 WI-FI SCANNER &amp; LOGGER — PIGLET FORK //</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Status</h3>
+    <div class="statusGrid">
+      <div class="pill ok"><span class="dot"></span>Scan: Active</div>
+      <div class="pill ok"><span class="dot"></span>SD: OK</div>
+      <div class="pill warn"><span class="dot"></span>GPS: Searching</div>
+      <div class="pill bad"><span class="dot"></span>STA: Offline</div>
+      <div class="pill ok"><span class="dot"></span>WiGLE: Ready</div>
+    </div>
+    <div class="kv">
+      <div><span class="k">2.4 GHz Found</span><span class="v">184</span></div>
+      <div><span class="k">5 GHz Found</span><span class="v">97</span></div>
+      <div><span class="k">STA IP</span><span class="v">—</span></div>
+      <div><span class="k">AP Clients Seen</span><span class="v">1</span></div>
+    </div>
+    <div class="row" style="margin-top:16px">
+      <button class="btn-primary">&#9654; Start Scan</button>
+      <button>&#9724; Stop Scan</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Configuration</h3>
+    <div class="kv">
+      <div><span class="k">Wardriver SSID</span><span class="v">HellzGate-WARDRIVE</span></div>
+      <div><span class="k">Scan Mode</span><span class="v">aggressive</span></div>
+      <div><span class="k">Device Name</span><span class="v">hellzgate-01</span></div>
+    </div>
+    <div class="row" style="margin-top:16px">
+      <button class="btn-primary">Save Config</button>
+    </div>
+  </div>
+
+</body>
+</html>
