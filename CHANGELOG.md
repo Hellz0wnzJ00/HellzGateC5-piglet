@@ -13,6 +13,18 @@ grep -rn "HELLZGATE FORK CHANGE" .
 
 Upstream Piglet's own changelog is preserved below this section, untouched.
 
+### WDGW / WiGLE Uploads
+
+- **WDGW parity with WiGLE across the dashboard.** WDGW (wdgwars.pl) is the
+  primary supported platform going forward. Previously WiGLE had a live
+  status pill with tracked valid/invalid state while WDGW only had a basic
+  connectivity test with no persistent status shown anywhere. Added a
+  matching `wdgwarsKeyStatus` global and live "WDGW: Valid/Invalid/Unknown"
+  status pill, reported via `status.json` the same way WiGLE's is.
+  Reordered the WDGoWars upload panel, Configuration fields, and both JS
+  field-order arrays to lead with WDGW throughout the dashboard, and
+  updated documentation (`README.md`, `USER_GUIDE.md`) to match.
+
 ### Mesh Networking
 
 - **Channel-split load balancing** (`MeshNode.cpp`, `coreReassignChannels()`).
