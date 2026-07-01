@@ -4,6 +4,7 @@
 #include "Config.h"
 #include "SDUtils.h"
 #include "MeshNode.h"
+#include "hellzgate_bitmaps.h"
 #include <math.h>
 
 // ---- Splash slogans ----
@@ -896,6 +897,16 @@ void updateOLED(float speedValue) {
 // ---- Boot splash screen ----
 
 void showSplashScreen() {
+  // === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+  // Was: nothing — boot went straight into Piglet's credit splash below.
+  // Now: brief HellzGate logo flash plays first, then falls through to
+  //      Piglet's original splash/credit/version sequence, unmodified.
+  // ===================================================================
+  display.clearDisplay();
+  display.drawBitmap(0, 0, hellzgate_splash_bmp, HELLZGATE_BMP_W, HELLZGATE_BMP_H, SSD1306_WHITE);
+  display.display();
+  delay(1200);
+
   const char* slogan = pickSplashSlogan();
 
   // --- Splash layout constants ---

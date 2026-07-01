@@ -6,8 +6,13 @@ struct Config {
   String wigleBasicToken;
   String homeSsid;
   String homePsk;
-  String wardriverSsid = "Piglet-WARDRIVE";
-  String wardriverPsk  = "wardrive1234";
+  // === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+  // Was: wardriverSsid = "Piglet-WARDRIVE", wardriverPsk = "wardrive1234"
+  // Now: rebranded defaults. Still override-able via wardriver.cfg — change
+  //      the password before real deployment, this is just the fallback.
+  // ===================================================================
+  String wardriverSsid = "HellzGate-WARDRIVE";
+  String wardriverPsk  = "hellzg8te";
   uint32_t gpsBaud     = 9600;
   String scanMode      = "aggressive"; // aggressive | powersaving
   String board = "auto"; // auto | s3 | c5 | c6 | exp  (pins selected at boot; reboot required after change)
@@ -38,6 +43,14 @@ struct Config {
   // node — become a scanning node that forwards records to the Core.
   // none — normal solo wardriving mode.
   String meshModeOnBoot = "none";
+
+  // === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+  // ESP-NOW mesh encryption key (PMK). Must be identical on the master AND
+  // every node, or encrypted peers won't be able to communicate at all.
+  // Padded/truncated to exactly 16 bytes internally — see
+  // MeshNode.cpp buildEspNowPmk(). Change this default before real
+  // deployment; it's a fallback, not a secret.
+  String espnowKey = "HellzGateMeshKey";
 
   // Rotate the OLED display 180° (true = upside-down mount, false = normal).
   // Requires reboot to take effect.

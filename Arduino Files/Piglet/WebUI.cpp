@@ -13,38 +13,44 @@ static const char INDEX_HTML[] PROGMEM = R"HTML(
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Piglet Wardriver</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1f437;</text></svg>">
+  <title>HellzGate C5</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x26a1;</text></svg>">
 <style>
   *,*::before,*::after{box-sizing:border-box}
 
+  /* === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+     Was: dark blue/teal palette (--bg:#0a0e13, --accent:#2dd4bf, etc.)
+     Now: HellzGate red/black palette. Same variable names, same layout —
+          only the color values changed, so every rule below that
+          references var(--accent) etc. re-themes automatically.
+     =================================================================== */
   :root{
-    --bg:#0a0e13;
-    --card:#111820;
-    --cardHover:#151d28;
-    --text:#e2eaf4;
-    --muted:#8899ab;
-    --border:#1e2a3a;
-    --input:#0c1219;
-    --inputBorder:#243044;
-    --inputFocus:#2d4a6f;
-    --accent:#2dd4bf;
-    --accentDim:rgba(45,212,191,.15);
-    --btn:#182030;
-    --btnHover:#1f2d42;
-    --btnText:#e2eaf4;
-    --primary:#2dd4bf;
-    --primaryText:#0a0e13;
-    --danger:#fb7185;
-    --dangerDim:rgba(251,113,133,.12);
-    --warn:#fbbf24;
-    --warnDim:rgba(251,191,36,.12);
-    --ok:#2dd4bf;
-    --okDim:rgba(45,212,191,.12);
-    --bad:#fb7185;
-    --barBg:#182030;
+    --bg:#0a0505;
+    --card:#140909;
+    --cardHover:#1c0d0d;
+    --text:#e8e8e8;
+    --muted:#998888;
+    --border:#3a1212;
+    --input:#0a0505;
+    --inputBorder:#4a1717;
+    --inputFocus:#7a1f1f;
+    --accent:#ff1a1a;
+    --accentDim:rgba(255,26,26,.15);
+    --btn:#1a0808;
+    --btnHover:#2a0d0d;
+    --btnText:#e8e8e8;
+    --primary:#ff3b3b;
+    --primaryText:#150505;
+    --danger:#ff6b6b;
+    --dangerDim:rgba(255,107,107,.12);
+    --warn:#ffb84d;
+    --warnDim:rgba(255,184,77,.12);
+    --ok:#39ff6a;
+    --okDim:rgba(57,255,106,.12);
+    --bad:#ff3b3b;
+    --barBg:#1a0808;
     --radius:10px;
-    --shadow:0 4px 24px rgba(0,0,0,.35);
+    --shadow:0 4px 24px rgba(0,0,0,.5);
   }
 
   html{color-scheme:dark}
@@ -252,10 +258,10 @@ static const char INDEX_HTML[] PROGMEM = R"HTML(
 <body>
 
   <div class="header">
-    <div class="logo">&#x1f437;</div>
+    <div class="logo">&#x26a1;</div>
     <div>
-      <h1>Piglet Wardriver</h1>
-<p class="sub">ESP32 Wi-Fi Scanner &amp; Logger &mdash; v2.51</p>
+      <h1>HellzGate C5</h1>
+<p class="sub">ESP32-C5 Wi-Fi Scanner &amp; Logger &mdash; Piglet fork</p>
     </div>
   </div>
 
@@ -380,6 +386,11 @@ static const char INDEX_HTML[] PROGMEM = R"HTML(
           <option value="core">Core &mdash; Mesh Coordinator</option>
         </select>
       </div>
+      <!-- HELLZGATE FORK CHANGE — see CHANGELOG.md -->
+      <div><label>ESP-NOW Mesh Key</label>
+        <input id="espnowKey" type="password" placeholder="16 characters — must match on every node and the master">
+        <p style="font-size:12px;margin-top:5px;color:var(--muted)">Encrypts mesh traffic between this device and its nodes/master. Change from the default before real deployment — every node must be flashed with the same key.</p>
+      </div>
       <div><label>Rotate Screen 180&deg; (requires reboot)</label>
         <select id="rotateScreen180">
           <option value="false">Normal</option>
@@ -473,7 +484,7 @@ function formatBytes(b){
 }
 
 /* ---- Masked config keys that should not be filled back into form ---- */
-const maskedKeys=new Set(['homePsk']);
+const maskedKeys=new Set(['homePsk','espnowKey']);  // HELLZGATE FORK CHANGE — see CHANGELOG.md
 
 /* ---- Status ---- */
 async function loadStatus(){
@@ -506,7 +517,7 @@ async function loadStatus(){
     setText('vApSsid',j?.config?.wardriverSsid||'\u2014');
 
     // Fill config form — skip masked/secret values
-    for(const k of ['wigleBasicToken','wdgwarsApiKey','deviceName','board','gpsBaud','homeSsid','wardriverSsid','wardriverPsk','scanMode','speedUnits','battPin','batteryTest','maxBootUploads','meshModeOnBoot','rotateScreen180','autoStartAfterUpload']){
+    for(const k of ['wigleBasicToken','wdgwarsApiKey','deviceName','board','gpsBaud','homeSsid','wardriverSsid','wardriverPsk','scanMode','speedUnits','battPin','batteryTest','maxBootUploads','meshModeOnBoot','espnowKey','rotateScreen180','autoStartAfterUpload']){
       if(j.config&&(k in j.config)){
         const v=String(j.config[k]);
         if(maskedKeys.has(k)&&(v===''||v==='(set)'))continue;
@@ -587,7 +598,7 @@ async function deleteAllLogs(){
 
 /* ---- Shared save logic used by both Save and Save+Reboot ---- */
 async function doSave(){
-  const keys=['board','wigleBasicToken','wdgwarsApiKey','deviceName','gpsBaud','homeSsid','homePsk','wardriverSsid','wardriverPsk','scanMode','speedUnits','battPin','batteryTest','maxBootUploads','meshModeOnBoot','rotateScreen180','autoStartAfterUpload'];
+  const keys=['board','wigleBasicToken','wdgwarsApiKey','deviceName','gpsBaud','homeSsid','homePsk','wardriverSsid','wardriverPsk','scanMode','speedUnits','battPin','batteryTest','maxBootUploads','meshModeOnBoot','espnowKey','rotateScreen180','autoStartAfterUpload'];
   let body='# Saved from Web UI\n# key=value\n';
   for(const k of keys){
     const el=$(k);
