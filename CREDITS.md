@@ -1,42 +1,19 @@
-# Credits & Attributions
+# Credits & Attribution
 
-Piglet Wardriver is licensed under [CC BY-NC-SA 4.0](LICENSE).  
-The following third-party work, protocols, and contributions are acknowledged below.
+**HellzGate C5** is a permission-based fork/adaptation of **Piglet** by
+**Hamspiced** (Midwest Gadgets LLC), reworked for the HellzGate C5 hardware
+(a single-board cluster of one master + nine ESP32-C5 scan nodes).
 
----
+- Original project: **Piglet** — https://github.com/Hamspiced/piglet
+- Original author: **Hamspiced** (Midwest Gadgets LLC)
+- Adaptation: **HellzGate C5**, with permission from Hamspiced to fork and adapt.
 
-## ESP-Now Mesh Protocol
+This adaptation reuses Piglet's concepts (Wi-Fi/BLE scanning, WiGLE-CSV logging,
+WiGLE/WDGW upload, mesh Core/Node split) and reworks them for a wired,
+multi-node cluster. Portions of the architecture derive from Piglet and remain
+credited to Hamspiced.
 
-**Project:** ESP32 Dual Band Wardriver  
-**Author:** JustCallMeKoko ([@justcallmekoko](https://github.com/justcallmekoko))  
-**Repository:** https://github.com/justcallmekoko/ESP32DualBandWardriver
+If you build on HellzGate C5, please keep this attribution and a link back to
+the original Piglet repository.
 
-Piglet's **Mesh Node mode** (page 5 on XIAO, page 4 on T-Dongle C5) implements a
-wire-compatible version of the JCMK ESP-Now Core/Node protocol. This allows Piglet
-to act as a scan node alongside JustCallMeKoko's coordinator hardware.
-
-The protocol constants, message type values, and wire format used in Piglet's
-`MeshNode.h` / `MeshNode.cpp` (XIAO) and the mesh section of `TDongleC5_Piglet.ino`
-are derived from and designed for compatibility with the JCMK wardriver protocol.
-The C++ implementation within Piglet is original work.
-
-Full credit to JustCallMeKoko for designing the open ESP-Now mesh protocol that
-makes multi-node wardriving interoperable.
-
----
-
-## AP Keep-Alive WebUI Feature
-
-**Contributor:** dagnazty ([@dagnazty](https://github.com/dagnazty))  
-**Pull Request:** [#3](https://github.com/Hamspiced/piglet/pull/3)
-
-The SoftAP keep-alive modal ("Stay in WebUI?" prompt) — including the `/extend`
-endpoint, extended 5-minute rolling window, and client-side countdown timer — was
-contributed by dagnazty and merged in v2.2.
-
----
-
-## Project
-
-**Author:** Midwest Gadgets LLC  
-**License:** CC BY-NC-SA 4.0 — https://creativecommons.org/licenses/by-nc-sa/4.0/
+Original Piglet case design by **Bread — Breadbox Systems**.

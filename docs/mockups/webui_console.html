@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HellzGate C5 — Web Console (mockup)</title>
+<style>
+  :root{--bg:#0e0f12;--panel:#16181d;--card:#1b1e24;--line:#2a2e37;--txt:#e6e8ec;--mut:#9aa1ad;--dim:#6b7280;--ok:#3ecf8e;--warn:#f0a63c;--mono:ui-monospace,Menlo,Consolas,monospace}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:20px}
+  .wrap{max-width:760px;margin:0 auto}
+  .top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+  .title{font-size:18px;font-weight:600}
+  .pill{font-size:12px;padding:3px 10px;border-radius:20px;background:rgba(62,207,142,.15);color:var(--ok);margin-left:8px}
+  .status{display:flex;gap:14px;font-size:13px;color:var(--mut)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+  .card{background:var(--card);border-radius:8px;padding:14px}
+  .lab{font-size:13px;color:var(--mut);margin-bottom:4px}
+  .num{font-size:26px;font-weight:600}
+  .sub{font-size:12px;color:var(--dim);margin-top:2px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .ph{font-size:15px;font-weight:600}
+  .psub{font-size:12px;color:var(--dim);margin-bottom:10px}
+  table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+  th{text-align:left;font-weight:400;color:var(--mut);padding:6px 4px}
+  td{padding:8px 4px;vertical-align:top;border-top:1px solid var(--line)}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px}
+  .nm{font-weight:600}
+  .mac{font-size:11px;color:var(--dim);font-family:var(--mono);margin-left:15px}
+  .band{color:var(--mut)}.ch{font-size:11px;color:var(--dim)}
+  select{background:var(--card);color:var(--txt);border:1px solid var(--line);border-radius:6px;height:30px;width:100%;font-size:12px}
+  .btns{display:flex;gap:8px;margin-top:14px}
+  button{background:var(--card);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer}
+  button.primary{background:rgba(240,166,60,.15);border-color:rgba(240,166,60,.4);color:var(--warn)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div><span class="title">HellzGate C5</span><span class="pill">Scanning</span></div>
+    <div class="status"><span>GPS fix</span><span>SD ok</span><span style="color:var(--dim)">live · 2s</span></div>
+  </div>
+  <div class="cards">
+    <div class="card"><div class="lab">WiFi networks</div><div class="num">247</div><div class="sub">2.4: 150 · 5: 97</div></div>
+    <div class="card"><div class="lab">BLE devices</div><div class="num">63</div><div class="sub">unique</div></div>
+    <div class="card"><div class="lab">Total hits</div><div class="num">892</div><div class="sub">all observations</div></div>
+    <div class="card"><div class="lab">Cluster temp</div><div class="num" style="color:var(--warn)">78&deg;C</div><div class="sub">fan on · hottest: Rear Left</div></div>
+  </div>
+  <div class="panel">
+    <div class="ph">Scan nodes</div>
+    <div class="psub">Live view of connected nodes — names editable, MAC secondary</div>
+    <table>
+      <thead><tr><th style="width:33%">Node</th><th style="width:22%">Band · channels</th><th style="width:14%">Last seen</th><th style="width:12%">Temp</th><th style="width:19%">Mode</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="btns"><button class="primary">Apply node settings</button><button>Refresh</button></div>
+  </div>
+</div>
+<script>
+const nodes=[
+ {n:1,name:"Front Left",mac:"A4:B2:6F:11",band:"2.4 + 5",ch:"1-13, 36-64",seen:"2s",temp:71,mode:"Both",up:true},
+ {n:2,name:"Front Right",mac:"A4:B2:6F:0F",band:"2.4",ch:"1-13",seen:"3s",temp:68,mode:"WiFi",up:true},
+ {n:3,name:"Rear Left",mac:"A4:B2:6F:14",band:"2.4 + 5",ch:"1-13, 36-165",seen:"1s",temp:78,mode:"Both",up:true,hot:true},
+ {n:4,name:"Rear Right",mac:"A4:B2:6F:21",band:"5",ch:"36-165",seen:"2s",temp:74,mode:"WiFi",up:true},
+ {n:5,name:"Roof Fore",mac:"A4:B2:6F:07",band:"2.4",ch:"1-13",seen:"4s",temp:66,mode:"WiFi",up:true},
+ {n:6,name:"Roof Aft",mac:"A4:B2:6F:33",band:"BLE",ch:"—",seen:"2s",temp:63,mode:"BLE",up:true},
+ {n:7,name:"Dash",mac:"A4:B2:6F:19",band:"2.4 + 5",ch:"1-13, 36-64",seen:"3s",temp:70,mode:"Both",up:true},
+ {n:8,name:"Trunk",mac:"A4:B2:6F:2C",band:"5",ch:"100-140",seen:"5s",temp:72,mode:"WiFi",up:true},
+ {n:9,name:"Spare",mac:"A4:B2:6F:40",band:"—",ch:"—",seen:"—",temp:null,mode:"WiFi",up:false},
+];
+const opts=["WiFi","BLE","Both"];
+document.getElementById("rows").innerHTML=nodes.map(d=>{
+ const dot=d.up?"var(--ok)":"var(--dim)";const nc=d.up?"var(--txt)":"var(--dim)";
+ const tt=d.temp===null?"—":d.temp+"°C";const tc=d.temp===null?"var(--dim)":(d.hot?"var(--warn)":"var(--mut)");
+ const sel=d.up?`<select>${opts.map(o=>`<option ${o===d.mode?"selected":""}>${o}</option>`).join("")}</select>`:`<span style="font-size:12px;color:var(--dim)">offline</span>`;
+ return `<tr><td><span class="dot" style="background:${dot}"></span><span class="nm" style="color:${nc}">${d.n}. ${d.name}</span><div class="mac">${d.mac}</div></td>
+ <td class="band">${d.band}<div class="ch">${d.ch}</div></td><td class="band">${d.seen}</td>
+ <td style="color:${tc};font-weight:600">${tt}</td><td>${sel}</td></tr>`;
+}).join("");
+</script>
+</body>
+</html>
