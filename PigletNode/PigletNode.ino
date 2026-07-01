@@ -65,6 +65,14 @@ typedef struct __attribute__((packed)) {
   char     text[JCMK_TEXT_MAX + 1];
 } jcmk_text_msg_t;  // 212 bytes — full size required by Biscuit Node/Pro
 
+// === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+// Was: struct matched master's channel-range-only admin message.
+// Now: kept in sync with master's added scan_mode field (Phase 1 of
+//      per-node BLE/WiFi/Both scan mode support). This node firmware does
+//      not yet act on scan_mode — it's received but unused until the
+//      actual BLE scan loop is built (Phase 3/4). Struct must stay
+//      byte-for-byte in sync with MeshNode.cpp's copy regardless.
+// ===================================================================
 typedef struct __attribute__((packed)) {
   char    magic[4];
   uint8_t type;
@@ -73,6 +81,7 @@ typedef struct __attribute__((packed)) {
   uint8_t node_count;
   uint8_t start_channel_idx;
   uint8_t end_channel_idx;
+  uint8_t scan_mode;   // 0=WiFi (default), 1=BLE, 2=Both — not yet used
 } jcmk_admin_msg_t;
 
 // JCMK dual-band channel table (2.4 GHz + 5 GHz)
@@ -144,12 +153,40 @@ static void setChannel(uint8_t ch) {
   esp_wifi_set_channel(ch, WIFI_SECOND_CHAN_NONE);
 }
 
+// === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+// No SD/config storage on this node firmware by design, so the ESP-NOW
+// key is a compile-time constant instead of a runtime setting. This
+// MUST match the master's configured espnowKey exactly (16 bytes,
+// zero-padded if the master's key is shorter) or this node will not be
+// able to talk to the master once encryption is enabled — check the
+// master's web UI Configuration card for the current key before flashing.
+static const char HELLZGATE_ESPNOW_KEY[] = "HellzGateMeshKey";  // must match master
+
+static void buildEspNowPmk(uint8_t out[16]) {
+  memset(out, 0, 16);
+  size_t n = strlen(HELLZGATE_ESPNOW_KEY);
+  if (n > 16) n = 16;
+  memcpy(out, HELLZGATE_ESPNOW_KEY, n);
+}
+
 static void addPeer(const uint8_t* mac) {
   if (esp_now_is_peer_exist(mac)) esp_now_del_peer(mac);
   esp_now_peer_info_t peer = {};
   memcpy(peer.peer_addr, mac, 6);
   peer.channel = 0;
-  peer.encrypt = false;
+
+  // === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+  // Broadcast frames cannot be encrypted by ESP-NOW (protocol limit, not
+  // a choice) — only the real unicast link to the Core gets encrypted.
+  bool isBroadcast = (memcmp(mac, JCMK_BCAST, 6) == 0);
+  if (isBroadcast) {
+    peer.encrypt = false;
+  } else {
+    uint8_t pmk[16];
+    buildEspNowPmk(pmk);
+    peer.encrypt = true;
+    memcpy(peer.lmk, pmk, 16);
+  }
   esp_now_add_peer(&peer);
 }
 
@@ -485,6 +522,14 @@ void setup() {
     }
   }
   esp_now_register_recv_cb(onRecv);
+
+  // === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+  // PMK must be set before any encrypted peers are added.
+  {
+    uint8_t pmk[16];
+    buildEspNowPmk(pmk);
+    esp_now_set_pmk(pmk);
+  }
 
   // Lock radio to JCMK home channel AFTER init
   delay(50);
