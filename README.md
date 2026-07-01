@@ -1,3 +1,15 @@
+<div align="center">
+
+<img src="Images/sticker.jpeg" alt="HellzGate C5 — 10-Node Passive Wireless Survey Array" width="700">
+
+**A 10-node ESP32-C5 passive wireless survey array — forked from Piglet**
+
+[Changelog](CHANGELOG.md#hellzgate-c5-fork-changes) · [Setup Guide](SETUP_GUIDE.md) · [Fork Style Guide](FORK_STYLE_GUIDE.md)
+
+</div>
+
+---
+
 
 # Piglet Wardriver
 
