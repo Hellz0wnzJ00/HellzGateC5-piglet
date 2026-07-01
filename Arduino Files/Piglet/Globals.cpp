@@ -2,9 +2,16 @@
 #include <Wire.h>
 
 // ---- Global objects ----
+// SPI/I2C OLED branch controlled by HELLZGATE_OLED_SPI — see Globals.h for
+// the full explanation and the CS/DC/RST placeholder values.
 PinMap pins = PINS_C6; // default until detected/configured
 Config cfg;
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+#ifdef HELLZGATE_OLED_SPI
+  Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &SPI,
+                            HELLZGATE_OLED_DC, HELLZGATE_OLED_RST, HELLZGATE_OLED_CS);
+#else
+  Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+#endif
 TinyGPSPlus gps;
 HardwareSerial GPSSerial(1);
 WebServer server(80);

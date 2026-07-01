@@ -36,6 +36,12 @@ typedef struct __attribute__((packed)) {
   char     text[JCMK_TEXT_MAX + 1];
 } jcmk_text_msg_t;
 
+// === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+// Was: admin message only carried channel range assignment.
+// Now: also carries scan_mode (HzScanMode) so the master can tell each
+//      node whether to scan WiFi, BLE, or both. Field appended at the end
+//      to keep the struct layout change minimal and easy to review.
+// ===================================================================
 typedef struct __attribute__((packed)) {
   char    magic[4];
   uint8_t type;
@@ -44,6 +50,7 @@ typedef struct __attribute__((packed)) {
   uint8_t node_count;
   uint8_t start_channel_idx;
   uint8_t end_channel_idx;
+  uint8_t scan_mode;   // HzScanMode: 0=WiFi (default), 1=BLE, 2=Both
 } jcmk_admin_msg_t;
 
 typedef struct __attribute__((packed)) {
@@ -65,6 +72,20 @@ const uint8_t JCMK_CHANNELS[] = {
   149, 153, 157, 161, 165, 169, 173, 177
 };
 const uint8_t JCMK_NUM_CHANNELS = (uint8_t)(sizeof(JCMK_CHANNELS));
+
+// === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+// esp_now_set_pmk() and peer.lmk both require EXACTLY 16 bytes. cfg.espnowKey
+// is a free-text String the user can set to any length via the web UI, so
+// this pads short keys with zero bytes and truncates long ones rather than
+// crashing or silently misbehaving. Padding with zeros means a key shorter
+// than 16 chars is weaker than a full 16-char key — the web UI should nudge
+// users toward exactly 16 characters, but this stays safe either way.
+static void buildEspNowPmk(uint8_t out[16]) {
+  memset(out, 0, 16);
+  size_t n = cfg.espnowKey.length();
+  if (n > 16) n = 16;
+  memcpy(out, cfg.espnowKey.c_str(), n);
+}
 
 // ================================================================
 //  Node state
@@ -154,7 +175,24 @@ static bool jcmkAddPeer(const uint8_t* mac) {
   esp_now_peer_info_t peer = {};
   memcpy(peer.peer_addr, mac, 6);
   peer.channel = 0;  // follow current home channel
-  peer.encrypt = false;
+
+  // === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+  // Was: peer.encrypt = false always — mesh traffic was unencrypted.
+  // Now: real (unicast) peers get encrypted with the configured PMK as
+  //      their LMK. Broadcast is deliberately left unencrypted — ESP-NOW
+  //      cannot encrypt broadcast/multicast frames at all, this is a
+  //      hardware/protocol limitation, not an oversight. Broadcast is
+  //      only ever used for the initial CORE_REQUEST discovery handshake,
+  //      never for actual scan data.
+  bool isBroadcast = (memcmp(mac, JCMK_BCAST, 6) == 0);
+  if (isBroadcast) {
+    peer.encrypt = false;
+  } else {
+    uint8_t pmk[16];
+    buildEspNowPmk(pmk);
+    peer.encrypt = true;
+    memcpy(peer.lmk, pmk, 16);
+  }
   return (esp_now_add_peer(&peer) == ESP_OK);
 }
 
@@ -355,6 +393,8 @@ static void coreFindOrAddNode(const uint8_t* mac, bool isBiscuit) {
       coreNodes[i].lastHbMs  = millis();
       coreNodes[i].recordsRx = 0;
       coreNodes[i].isBiscuit = isBiscuit;
+      // === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+      coreNodes[i].scanMode  = HZ_SCAN_WIFI;  // default; changeable via web UI (Phase 2)
       memcpy(coreNodes[i].mac, mac, 6);
       coreNodeCount++;
       jcmkAddPeer(mac);
@@ -414,6 +454,7 @@ static void coreReassignChannels() {
       msg.node_index         = n;
       msg.start_channel_idx  = coreNodes[slot].startIdx;
       msg.end_channel_idx    = coreNodes[slot].endIdx;
+      msg.scan_mode          = coreNodes[slot].scanMode;  // HELLZGATE FORK CHANGE
       esp_now_send(coreNodes[slot].mac, (uint8_t*)&msg, sizeof(msg));
     }
     delay(10);
@@ -441,6 +482,7 @@ static void coreResendAdminToAll() {
       msg.node_index         = n;
       msg.start_channel_idx  = coreNodes[i].startIdx;
       msg.end_channel_idx    = coreNodes[i].endIdx;
+      msg.scan_mode          = coreNodes[i].scanMode;  // HELLZGATE FORK CHANGE
       esp_now_send(coreNodes[i].mac, (uint8_t*)&msg, sizeof(msg));
     }
     n++;
@@ -614,6 +656,14 @@ void enterNodeMode() {
   }
   esp_now_register_recv_cb(jcmkOnRecv);
 
+  // === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+  // PMK must be set before any encrypted peers are added below.
+  {
+    uint8_t pmk[16];
+    buildEspNowPmk(pmk);
+    esp_now_set_pmk(pmk);
+  }
+
   // Lock radio to JCMK ESP-Now home channel AFTER init (matches JCMK pattern)
   delay(50);
   jcmkSetChannel(JCMK_ESPNOW_CH);
@@ -691,6 +741,15 @@ void enterCoreMode() {
     return;
   }
   esp_now_register_recv_cb(jcmkOnRecv);
+
+  // === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+  // PMK must be set before any encrypted peers are added below.
+  {
+    uint8_t pmk[16];
+    buildEspNowPmk(pmk);
+    esp_now_set_pmk(pmk);
+  }
+
   delay(50);
   jcmkSetChannel(JCMK_ESPNOW_CH);
   // Verify the channel actually stuck

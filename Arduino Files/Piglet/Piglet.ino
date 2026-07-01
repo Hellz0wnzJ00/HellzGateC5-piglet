@@ -333,6 +333,18 @@ void setup() {
   Serial.print(pins.btn);
   Serial.println(", INPUT_PULLUP)");
 
+  // === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+  // Was: always I2C init. Now: branches on HELLZGATE_OLED_SPI (set in
+  // Globals.cpp) so the same firmware can target either interface
+  // depending on which one the hardware test confirms this board uses.
+  bool lcdOk = false;
+#ifdef HELLZGATE_OLED_SPI
+  Serial.println("[LCD] Initializing SPI + SSD1306 (HELLZGATE_OLED_SPI)...");
+  lcdOk = display.begin(SSD1306_SWITCHCAPVCC);
+  if (!lcdOk) {
+    Serial.println("[LCD] SPI SSD1306 init FAIL — check CS/DC/RST GPIO numbers");
+  }
+#else
   // I2C OLED (final pins)
   Serial.println("[LCD] Initializing I2C + SSD1306 (final pins)...");
   pinMode(pins.sda, INPUT_PULLUP);
@@ -346,12 +358,12 @@ void setup() {
   Serial.print(" SCL level="); Serial.println(digitalRead(pins.scl));
   Wire.setClock(100000);
 
-  bool lcdOk = false;
   lcdOk = display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   if (!lcdOk) {
     Serial.println("[LCD] 0x3C failed, trying 0x3D...");
     lcdOk = display.begin(SSD1306_SWITCHCAPVCC, 0x3D);
   }
+#endif
 
   if (lcdOk) {
     Serial.println("[LCD] SSD1306 init OK");

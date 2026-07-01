@@ -39,6 +39,21 @@ void drawPageMeshNode();
 
 #define CORE_MAX_NODES 12
 
+// === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+// Was: no per-node scan-mode concept; every node always WiFi-scanned.
+// Now: each node carries a configurable scanMode (WiFi/BLE/Both), sent to
+//      it via jcmk_admin_msg_t alongside its channel range. Defaults to
+//      HZ_SCAN_WIFI for every node — behavior is unchanged unless a user
+//      explicitly changes it via the web UI (Phase 2, not yet built).
+//      Actual BLE scanning on the node side is Phase 3/4, not yet built —
+//      this is just the config plumbing.
+// ===================================================================
+enum HzScanMode : uint8_t {
+  HZ_SCAN_WIFI = 0,   // default — matches all current/existing behavior
+  HZ_SCAN_BLE  = 1,
+  HZ_SCAN_BOTH = 2
+};
+
 struct CoreNodeInfo {
   bool     active;
   uint8_t  mac[6];
@@ -47,6 +62,7 @@ struct CoreNodeInfo {
   uint32_t lastHbMs;
   uint32_t recordsRx;
   bool     isBiscuit;  // true = Biscuit Node protocol (requires full-size 212-byte packets)
+  uint8_t  scanMode;   // HzScanMode — defaults to HZ_SCAN_WIFI on registration
 };
 
 // Core state (read from Display.cpp for page 5 rendering)

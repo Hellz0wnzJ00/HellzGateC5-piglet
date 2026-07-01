@@ -15,6 +15,33 @@
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 
+// ================================================================
+// === HELLZGATE FORK CHANGE — see CHANGELOG.md ===
+// The board's OLED module (Wisevision X096-2864KSWPG01-H30, SSD1315
+// controller) supports BOTH I2C and SPI. Schematic analysis suggests
+// this board's CS#/RES#/D/C# pins are routed as live signals (the
+// pattern for 4-wire SPI), not tied off the way a fixed-I2C module
+// would be — but this needs real hardware confirmation, not just a
+// schematic read. Test stock I2C init first; if Serial shows
+// "[LCD] SSD1306 init FAIL at 0x3C and 0x3D", uncomment the line below,
+// fill in the actual CS/DC/RST GPIO numbers for your board (confirm
+// these against your own schematic — do not guess), and re-flash.
+//
+// MUST live in this header, not a .cpp file — Piglet.ino and Globals.cpp
+// are separate translation units and only share what's in shared headers.
+//
+// #define HELLZGATE_OLED_SPI
+//
+#ifdef HELLZGATE_OLED_SPI
+  #include <SPI.h>
+  // TODO: confirm these three GPIO numbers against your actual board
+  // before enabling. Do not trust these placeholder values.
+  #define HELLZGATE_OLED_CS   -1
+  #define HELLZGATE_OLED_DC   -1
+  #define HELLZGATE_OLED_RST  -1
+#endif
+// ================================================================
+
 // ---- Global objects ----
 extern PinMap pins;
 extern Config cfg;
